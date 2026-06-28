@@ -1,188 +1,245 @@
-# 📡 Telco Customer Churn  Statistical Analysis & Predictive ML
+# Telco Customer Churn Prediction
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Pandas](https://img.shields.io/badge/Pandas-Data%20Wrangling-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org)
-[![SciPy](https://img.shields.io/badge/SciPy-Hypothesis%20Testing-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white)](https://scipy.org)
-[![Scikit-learn](https://img.shields.io/badge/Scikit--learn-Machine%20Learning-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
-[![Seaborn](https://img.shields.io/badge/Seaborn-Visualization-4C72B0?style=for-the-badge)](https://seaborn.pydata.org)
-[![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=for-the-badge&logo=jupyter&logoColor=white)](https://jupyter.org)
+A full end-to-end machine learning project that goes beyond simply training a model. The goal was to first understand *why* customers leave a telecom company using rigorous statistical hypothesis testing, and then build a system that can *predict who* is likely to leave next  so a retention team can act before it is too late.
 
-> Most churn projects stop at "Random Forest gives 80% accuracy."
-> This one starts a step earlier: **which features actually, statistically, matter** 
-> and only then builds a model on top of that evidence.
+The project covers the complete pipeline: data cleaning, exploratory analysis, statistical validation, preprocessing, model selection via cross-validation, threshold tuning, and a reusable prediction function.
 
 ---
 
-##  Business Problem
+## The Problem
 
-A telecom company has a **26.54% customer churn rate** (95% CI: 25.51%–27.57%
-across 7,043 customers)  roughly **1 in 4 customers leaves**. Acquiring a new
-customer costs far more than retaining an existing one, so the business needs
-to know:
+Customer churn is expensive. Acquiring a new customer costs significantly more than retaining an existing one. Telecom companies typically have churn rates between 15 and 25 percent annually, and without a way to identify at risk customers early, retention efforts end up as generic blanket discounts that are costly and ineffective.
 
-1. **Which factors are *statistically proven* to drive churn** (not just visually correlated)?
-2. **Which customers, right now, are at risk of leaving**  so retention offers can be targeted instead of blasted to everyone?
+This project builds a system that scores each customer with a churn probability so the business can focus its retention budget on the customers most likely to leave.
 
 ---
 
-##  What Makes This Project Different
-This project inserts a **statistical validation layer** in between the same
-workflow an analyst would use to justify a recommendation to a business
-stakeholder before it reaches a data scientist's model.
+## Dataset
+
+The dataset is the [Telco Customer Churn dataset](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) from Kaggle.
+
+- 7,043 customers
+- 21 features covering demographics, account information, and subscribed services
+- Target variable: whether the customer churned (Yes / No)
+- Class imbalance: approximately 73% retained, 27% churned
+
+---
+
+## Project Structure
 
 ```
-Data Cleaning → EDA → Statistical Hypothesis Testing → Preprocessing
-              → Class-Imbalance Handling → Model Comparison (4 algorithms)
-              → Final Model Evaluation → Predictive System
+├── Customer_Churn_Analysis_ML_Statistics.ipynb   # Main notebook
+├── WA_Fn-UseC_-Telco-Customer-Churn.csv          # Dataset
+├── customer_churn_model.pkl                       # Trained model + threshold
+├── encoders.pkl                                   # Label encoders + scaler
+└── images/                                        # Visualisations used in this README
 ```
 
 ---
 
-##  Machine Learning Results
+## Step-by-Step Pipeline
 
-Four models were compared using **5-fold Stratified Cross-Validation** (ROC-AUC):
+### 1. Data Cleaning
 
-| Model | Mean ROC-AUC |
-|---|---|
-| **Gradient Boosting** ✅ | **0.847** |
-| Logistic Regression | 0.844 |
-| Random Forest | 0.824 |
-| Decision Tree | 0.648 |
+The dataset had no null values but `TotalCharges` was stored as a string and contained blank spaces for 11 brand-new customers with zero tenure who had never been billed. These were identified, filled with 0, and the column was converted to float. The `customerID` column was dropped as it carries no predictive signal.
 
-**Final model: Gradient Boosting**  on the held-out test set:
+### 2. Exploratory Data Analysis
 
-| Metric | Score |
-|---|---|
-| Accuracy | 0.80 |
-| ROC-AUC | 0.839 |
-| Precision (Churn class) | 0.65 |
-| Recall (Churn class) | 0.52 |
-| F1-score (Churn class) | 0.58 |
+We start with distributions of the three numerical features  tenure, monthly charges, and total charges  and then look at how each categorical feature breaks down by churn status.
 
-**Top 5 features driving the model's predictions:**
-1. Contract (36.4%)
-2. MonthlyCharges (15.1%)
-3. Tenure (13.7%)
-4. TotalCharges (11.9%)
-5. OnlineSecurity (7.3%)
+**Numerical feature distributions**
 
-Contract type alone accounts for over a third of the model's predictive
-power — and it's also the strongest statistical driver found in the
-hypothesis-testing section. The statistics and the model agree, which is
-exactly the kind of cross-validation a stakeholder wants to see.
+![Numerical Distributions](images/numerical_distributions.png)
 
----
+Tenure has a bimodal distribution: many customers either leave very early or stay for a very long time. Monthly charges are roughly uniform, while total charges skew right because they accumulate with tenure.
 
-##  Business Recommendations
+**Numerical features split by churn**
 
-1. **Target month-to-month contract customers first**  Contract is both the
-   strongest statistical driver (Cramér's V = 0.41) and the top ML feature
-   (36.4% importance). Offering discounted 1-year contract upgrades to
-   month-to-month customers is the single highest-leverage retention action.
+![Violin Plot](images/violin_churn_split.png)
 
-2. **Build a "new customer" retention program for the first 18 months** 
-   churned customers average just 18 months of tenure vs. 38 for retained
-   customers. Early-tenure customers are the highest-risk group.
+Churned customers have noticeably shorter tenure and higher monthly charges on average. This is already a strong signal before we even run any models.
 
-3. **Bundle Online Security & Tech Support into base packages** both show
-   strong, significant associations with churn (Cramér's V > 0.34). Customers
-   without these add-ons churn at noticeably higher rates.
+**Correlation heatmap**
 
-4. **Review pricing for high-Monthly-Charge customers** churned customers
-   pay roughly ₹13 more per month on average (₹74.44 vs ₹61.27), a
-   statistically significant difference (p < 0.001).
+![Correlation Heatmap](images/correlation_heatmap.png)
 
-5. **Deprioritize gender-based segmentation**  statistically, gender has
-   zero relationship with churn (p = 0.487). Any retention campaign
-   segmented by gender is very likely wasted effort.
+Total charges is highly correlated with tenure, which makes sense as it is simply the running total of monthly bills. We keep both features but this is worth noting.
 
-6. **Use the model's probability score, not just the label** the model
-   outputs `predict_proba()`, so the business can rank customers by churn
-   risk score and focus retention budget on the top percentile, rather than
-   treating all "predicted churn" customers identically.
+**Categorical features by churn status**
+
+![Categorical Count Plots](images/categorical_countplots.png)
+
+Month-to-month contract customers churn at a dramatically higher rate than those on one or two year contracts. Customers without online security, tech support, or online backup also show elevated churn. These patterns are consistent and visible across the dataset.
 
 ---
 
-##  Tech Stack
+### 3. Statistical Hypothesis Testing
 
-| Tool | Purpose |
-|---|---|
-| **Python 3.10+** | Core language |
-| **Pandas / NumPy** | Data wrangling, feature engineering |
-| **SciPy** | Chi-Square test, t-tests, Cramér's V, point-biserial correlation |
-| **Scikit-learn** | Label encoding, train/test split, Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, model evaluation |
-| **Matplotlib / Seaborn** | Distribution plots, box plots, count plots, heatmaps, ROC curve |
-| **Pickle** | Model & encoder persistence for the predictive system |
-| **Jupyter Notebook** | Development & analysis narrative |
+Charts can show patterns but they cannot tell us whether those patterns are statistically significant or just noise. We run formal hypothesis tests on every feature.
 
----
+**For categorical features:** Chi-square test of independence to check significance, and Cramér's V to measure effect size on a 0 to 1 scale.
 
-##  Handling Class Imbalance , A Design Choice Worth Explaining
+**For numerical features:** Welch's independent t-test to compare means between churned and retained groups, and point-biserial correlation to get direction and magnitude.
 
-The target is imbalanced (73.5% No-Churn vs 26.5% Churn). This project uses
-`class_weight="balanced"` rather than SMOTE:
+**Cramér's V effect sizes — categorical features**
 
-- No extra dependencies (`imbalanced-learn` not required)
-- No synthetic data  avoids any risk of synthetic samples leaking
-  unrealistic patterns into the model
-- Achieves a comparable recall lift on the minority class
+![Cramers V](images/cramers_v_barchart.png)
 
-SMOTE is documented as a commented-out alternative in the notebook for
-anyone who wants to compare both approaches a good discussion point in
-interviews about why one imbalance-handling technique was chosen over
-another.
+Contract type has the highest effect size by a clear margin. Tenure, online security, and tech support follow. Every single categorical feature tested came back statistically significant at p < 0.05, meaning none of the patterns visible in the charts are noise.
+
+For numerical features, all three (tenure, monthly charges, total charges) showed highly significant differences between churned and retained groups with p-values in the range of 10⁻⁴⁰ to 10⁻⁵⁰.
 
 ---
 
-##  Dataset
+### 4. Preprocessing
 
-**Source:** [Telco Customer Churn (Kaggle)](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
-**Rows:** 7,043 customers | **Columns:** 21 (demographics, account info, services subscribed, churn label)
+- Label encoding applied to all categorical columns, with encoders saved to disk for reuse
+- `StandardScaler` fitted on training data only and applied to the three numerical columns  essential for Logistic Regression and good practice generally
+- All preprocessing artifacts saved alongside the model so new data can be transformed identically
 
 ---
 
-##  How to Run
+### 5. Handling Class Imbalance
+
+The target is imbalanced at roughly 73/27. Rather than oversampling (SMOTE), we use `class_weight="balanced"` in all models, which tells each model to penalise misclassifying the minority churn class more heavily. This avoids generating synthetic data while still correcting for the imbalance.
+
+---
+
+### 6. Model Training and Cross-Validation
+
+Four models were trained and compared using 5-fold stratified cross-validation. The metric used is ROC-AUC, which measures how well the model separates churners from non-churners regardless of the decision threshold.
+
+**Cross-validation comparison**
+
+![Model Comparison](images/cv_model_comparison.png)
+
+Gradient Boosting came out on top with a mean ROC-AUC of approximately 0.84, narrowly ahead of Logistic Regression. Unlike Logistic Regression, Gradient Boosting can capture non-linear interactions between features such as the combination of contract type, tenure, and internet service type.
+
+---
+
+### 7. Final Model and Threshold Tuning
+
+The final Gradient Boosting model was trained with light hyperparameter tuning to reduce overfitting:
+
+```python
+GradientBoostingClassifier(
+    n_estimators=200,
+    learning_rate=0.05,
+    max_depth=4,
+    min_samples_leaf=20,
+    subsample=0.8,
+    random_state=42
+)
+```
+
+The default classification threshold of 0.5 is rarely optimal for imbalanced problems. We searched for the threshold that maximises the F1 score on the churn class. This meaningfully improved recall on churners which is the right trade-off here because missing an at-risk customer is more costly than a false alarm.
+
+**Confusion matrix**
+
+![Confusion Matrix](images/confusion_matrix.png)
+
+**ROC curve**
+
+![ROC Curve](images/roc_curve.png)
+
+The model achieves an AUC of approximately 0.84, meaning it correctly ranks a churner above a non-churner 84% of the time.
+
+---
+
+### 8. Feature Importance
+
+![Feature Importance](images/feature_importance.png)
+
+Tenure, contract type, and monthly charges dominate the model's decisions consistent with what the statistical tests showed. The model has learnt the same relationships that the hypothesis tests confirmed.
+
+---
+
+## Results Summary
+
+| Metric | Value |
+|--------|-------|
+| ROC-AUC | ~0.84 |
+| Accuracy (tuned threshold) | ~0.77 |
+| Recall on churners | ~0.79 |
+| Precision on churners | ~0.60 |
+
+---
+
+## Making Predictions
+
+Load the saved model and call `predict_churn` with any customer record:
+
+```python
+import pickle, pandas as pd
+
+with open("customer_churn_model.pkl", "rb") as f:
+    model_data = pickle.load(f)
+with open("encoders.pkl", "rb") as f:
+    preprocessing = pickle.load(f)
+
+def predict_churn(customer_dict):
+    row = pd.DataFrame([customer_dict])
+    for col, encoder in preprocessing["encoders"].items():
+        if col in row.columns:
+            row[col] = encoder.transform(row[col])
+    row[preprocessing["num_cols"]] = preprocessing["scaler"].transform(
+        row[preprocessing["num_cols"]]
+    )
+    prob = model_data["model"].predict_proba(
+        row[model_data["feature_names"]]
+    )[0][1]
+    label = "Churn" if prob >= model_data["threshold"] else "No Churn"
+    print(f"Prediction : {label}")
+    print(f"Churn prob : {prob:.2%}")
+    return label, prob
+```
+
+---
+
+## Key Findings
+
+Contract type is the single strongest driver of churn. Customers on month-to-month contracts churn at rates several times higher than those on annual or two-year contracts, and this difference is statistically confirmed with the highest Cramér's V effect size of all features tested.
+
+Short tenure is tightly linked to churn. Customers who leave tend to do so early. Those who make it past the first year or two show dramatically lower churn rates, suggesting an onboarding and early experience problem rather than a long-term satisfaction problem.
+
+Lack of value-added services  online security, tech support, device protection — is associated with higher churn. Customers who subscribe to more services have more reasons to stay and a higher switching cost.
+
+Higher monthly charges correlate with churn. Fiber optic customers pay more and churn more, which points to a pricing or value perception issue in that segment specifically.
+
+---
+
+## Technologies Used
+
+- Python 3
+- pandas, numpy — data manipulation
+- matplotlib, seaborn — visualisation
+- scipy — statistical hypothesis testing (chi-square, t-test, point-biserial correlation)
+- scikit-learn — preprocessing, model training, cross-validation, evaluation
+- pickle — model serialisation
+
+---
+
+## How to Run
 
 ```bash
-git clone <your-repo-url>
-cd <repo-folder>
-pip install -r requirements.txt
-jupyter notebook Customer_Churn_Prediction_using_ML.ipynb
-```
+# Clone the repository
+git clone https://github.com/yourusername/telco-churn-prediction.git
+cd telco-churn-prediction
 
-**requirements.txt**
-```
-pandas
-numpy
-scipy
-scikit-learn
-matplotlib
-seaborn
-jupyter
+# Install dependencies
+pip install numpy pandas matplotlib seaborn scipy scikit-learn
+
+# Download the dataset from Kaggle and place it in the project root
+# https://www.kaggle.com/datasets/blastchar/telco-customer-churn
+
+# Open the notebook
+jupyter notebook Customer_Churn_Analysis_ML_Statistics.ipynb
 ```
 
 ---
 
-##  Future Work
+## What I Would Add Next
 
-1. Hyperparameter tuning via `GridSearchCV` / `RandomizedSearchCV`
-2. Compare SMOTE vs. `class_weight="balanced"` head-to-head
-3. Address overfitting risk via tree-depth / learning-rate tuning + learning curves
-4. Add SHAP values for individual-customer-level explainability
-5. Deploy via a simple Streamlit app for interactive churn-risk scoring
+There are a few natural extensions to this project. SHAP values would allow per-customer explainability  not just which features matter globally, but why the model made a specific prediction for a specific person. A Streamlit app would make the prediction function accessible to a non-technical retention team. Experiment tracking with MLflow or Weights and Biases would make hyperparameter comparisons more systematic. And comparing SMOTE oversampling against the class-weight approach directly would be a useful ablation study.
 
----
 
-## 👩‍💻 About the Author
-
-**Disha Bhadauria** | Aspiring Data Analyst
-
-**Skills demonstrated in this project:**
-- Data cleaning & feature engineering (handling disguised missing values)
-- Statistical hypothesis testing (Chi-Square, Cramér's V, t-tests, point-biserial correlation, confidence intervals)
-- Supervised ML model comparison (4 algorithms, stratified CV)
-- Class-imbalance handling with a justified, documented design choice
-- Model persistence & a working predictive system
-- Translating statistical and ML findings into business recommendations
-
-[LinkedIn](#) • [Portfolio](#) • [Email](#)
