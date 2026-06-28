@@ -222,18 +222,31 @@ Higher monthly charges correlate with churn. Fiber optic customers pay more and 
 ## How to Run
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/telco-churn-prediction.git
-cd telco-churn-prediction
+## 🚀 Installation
 
-# Install dependencies
-pip install numpy pandas matplotlib seaborn scipy scikit-learn
+### Clone the Repository
 
-# Download the dataset from Kaggle and place it in the project root
-# https://www.kaggle.com/datasets/blastchar/telco-customer-churn
+```bash
+git clone https://github.com/Dishabhadauria30/-Telco-Customer-Churn-Statistical-Analysis-Predictive-ML.git
+```
 
-# Open the notebook
-jupyter notebook Customer_Churn_Analysis_ML_Statistics.ipynb
+### Navigate to the Project
+
+```bash
+cd -Telco-Customer-Churn-Statistical-Analysis-Predictive-ML
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Run the Jupyter Notebook
+
+```bash
+jupyter notebook
+```
 ```
 
 ---
