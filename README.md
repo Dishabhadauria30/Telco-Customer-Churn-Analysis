@@ -88,9 +88,9 @@ Tenure, contract type, and monthly charges dominate the model's decisions consis
 
 ---
 
-## Part 2 — Power BI Executive Dashboard
+## Part 2 Power BI Executive Dashboard
 
-The notebook above answers **who is going to churn and why**. The dashboard answers **what should the business do about it, today** — built for retention managers and leadership who need a live, filterable view rather than a static report.
+The notebook above answers **who is going to churn and why**. The dashboard answers **what should the business do about it, today** built for retention managers and leadership who need a live, filterable view rather than a static report.
 
 ### Dashboard at a glance
 
@@ -105,14 +105,14 @@ The dashboard includes a churn-split pie chart, a customer treemap segmented by 
 
 ### Key insights surfaced by the dashboard
 
-- **Contract type is the biggest lever, by a wide margin.** Month-to-month customers churn at **42.7%**, one-year contract customers at **11.3%**, and two-year contract customers at just **2.8%** — a **~15x gap** between the riskiest and safest contract types.
-- **New customers are the most fragile.** Customers in their first year (0–12 months tenure) churn at **47.4%**, compared to just **9.5%** for customers with 48+ months tenure — churn is overwhelmingly an early-lifecycle problem, not a long-term satisfaction one.
-- **Churned customers pay more, not less.** Average monthly charges for churned customers are **$74.44**, versus **$61.27** for retained customers — pointing to a pricing or perceived-value problem rather than customers leaving to save money elsewhere.
-- **Risk compounds:** a new, month-to-month, higher-paying customer sits at the intersection of all three high-risk signals simultaneously — exactly the segment the dashboard is built to surface first.
+- **Contract type is the biggest lever, by a wide margin.** Month-to-month customers churn at **42.7%**, one-year contract customers at **11.3%**, and two-year contract customers at just **2.8%** a **~15x gap** between the riskiest and safest contract types.
+- **New customers are the most fragile.** Customers in their first year (0–12 months tenure) churn at **47.4%**, compared to just **9.5%** for customers with 48+ months tenure churn is overwhelmingly an early-lifecycle problem, not a long-term satisfaction one.
+- **Churned customers pay more, not less.** Average monthly charges for churned customers are **$74.44**, versus **$61.27** for retained customers pointing to a pricing or perceived-value problem rather than customers leaving to save money elsewhere.
+- **Risk compounds:** a new, month-to-month, higher-paying customer sits at the intersection of all three high-risk signals simultaneously exactly the segment the dashboard is built to surface first.
 
 ### Why this matters for the business
 
-Rather than spreading a flat retention budget evenly across all 7,043 customers, the dashboard lets a retention team filter directly to the highest-risk segment — new, month-to-month, higher-paying customers — and prioritize contract-upgrade or loyalty offers there first. That's the difference between a reactive, blanket-discount strategy and a targeted, ROI-driven one.
+Rather than spreading a flat retention budget evenly across all 7,043 customers, the dashboard lets a retention team filter directly to the highest-risk segment new, month-to-month, higher-paying customers and prioritize contract-upgrade or loyalty offers there first. That's the difference between a reactive, blanket-discount strategy and a targeted, ROI-driven one.
 
 ### Built with
 Power BI Desktop, DAX (custom measures for Churn Rate %, Retained/Churned Customer counts, and Average Monthly Charges by churn status), and calculated columns for Risk Type and Tenure Band segmentation.
@@ -121,10 +121,10 @@ Power BI Desktop, DAX (custom measures for Churn Rate %, Retained/Churned Custom
 
 ## Combined Key Findings
 
-1. **Contract type is the single strongest driver of churn** — confirmed statistically (highest Cramér's V) *and* visually in the dashboard (15x gap between month-to-month and two-year contracts).
+1. **Contract type is the single strongest driver of churn** confirmed statistically (highest Cramér's V) *and* visually in the dashboard (15x gap between month-to-month and two-year contracts).
 2. **Short tenure is tightly linked to churn.** Customers who leave tend to do so early — suggesting an onboarding and early-experience problem rather than a long-term satisfaction problem.
-3. **Lack of value-added services** (online security, tech support, device protection) is associated with higher churn — customers with more services have more reasons to stay.
-4. **Higher monthly charges correlate with churn**, both in the model's feature importance and in the dashboard's direct comparison — pointing to a pricing or value-perception issue worth investigating, particularly for fiber-optic customers.
+3. **Lack of value-added services** (online security, tech support, device protection) is associated with higher churn customers with more services have more reasons to stay.
+4. **Higher monthly charges correlate with churn**, both in the model's feature importance and in the dashboard's direct comparison pointing to a pricing or value-perception issue worth investigating, particularly for fiber-optic customers.
 
 ---
 
