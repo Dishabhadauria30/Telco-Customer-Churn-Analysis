@@ -1,16 +1,16 @@
-# Telco Customer Churn Prediction
+# Telco Customer Churn Analysis — Statistical Analysis, Predictive ML & Power BI Dashboard
 
-A full end-to-end machine learning project that goes beyond simply training a model. The goal was to first understand *why* customers leave a telecom company using rigorous statistical hypothesis testing, and then build a system that can *predict who* is likely to leave next  so a retention team can act before it is too late.
+A full end-to-end analytics project that goes beyond training a model. The goal was threefold: first, understand **why** customers leave a telecom company using rigorous statistical hypothesis testing; second, build a system that can **predict who is likely to leave next** so a retention team can act before it's too late; and third, package those findings into a **self-serve Power BI dashboard** so non-technical stakeholders can monitor churn risk without opening a notebook.
 
-The project covers the complete pipeline: data cleaning, exploratory analysis, statistical validation, preprocessing, model selection via cross-validation, threshold tuning, and a reusable prediction function.
+The project covers the complete pipeline: data cleaning, exploratory analysis, statistical validation, preprocessing, model selection via cross-validation, threshold tuning, a reusable prediction function, and a live BI dashboard for business users.
 
 ---
 
 ## The Problem
 
-Customer churn is expensive. Acquiring a new customer costs significantly more than retaining an existing one. Telecom companies typically have churn rates between 15 and 25 percent annually, and without a way to identify at risk customers early, retention efforts end up as generic blanket discounts that are costly and ineffective.
+Customer churn is expensive. Acquiring a new customer costs significantly more than retaining an existing one. Telecom companies typically have churn rates between 15–25% annually, and without a way to identify at-risk customers early, retention efforts end up as generic blanket discounts — costly and ineffective.
 
-This project builds a system that scores each customer with a churn probability so the business can focus its retention budget on the customers most likely to leave.
+This project builds a system that scores each customer with a churn probability *and* a dashboard that lets a retention manager see, at a glance, which customer segments need attention today.
 
 ---
 
@@ -18,18 +18,17 @@ This project builds a system that scores each customer with a churn probability 
 
 The dataset is the [Telco Customer Churn dataset](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) from Kaggle.
 
-- 7,043 customers
-- 21 features covering demographics, account information, and subscribed services
-- Target variable: whether the customer churned (Yes / No)
-- Class imbalance: approximately 73% retained, 27% churned
-
----
+- **7,043 customers**
+- **21 features** covering demographics, account information, and subscribed services
+- **Target variable:** whether the customer churned (Yes / No)
+- **Class imbalance:** approximately 73% retained, 27% churned
 
 ## Project Structure
 
 ```
-├── Customer_Churn_Analysis_ML_Statistics.ipynb   # Main notebook
-├── WA_Fn-UseC_-Telco-Customer-Churn.csv          # Dataset
+├── Customer_Churn_Analysis_ML_Statistics.ipynb   # Main notebook (stats + ML pipeline)
+├── Customer_Churn_Dashboard.pbix                 # Power BI executive dashboard
+├── WA_Fn-UseC_-Telco-Customer-Churn.csv           # Dataset
 ├── customer_churn_model.pkl                       # Trained model + threshold
 ├── encoders.pkl                                   # Label encoders + scaler
 └── images/                                        # Visualisations used in this README
@@ -37,90 +36,32 @@ The dataset is the [Telco Customer Churn dataset](https://www.kaggle.com/dataset
 
 ---
 
-## Step-by-Step Pipeline
+## Part 1 — Statistical Analysis & Predictive ML
 
 ### 1. Data Cleaning
-
-The dataset had no null values but `TotalCharges` was stored as a string and contained blank spaces for 11 brand-new customers with zero tenure who had never been billed. These were identified, filled with 0, and the column was converted to float. The `customerID` column was dropped as it carries no predictive signal.
+The dataset had no null values, but `TotalCharges` was stored as a string and contained blank spaces for 11 brand-new customers with zero tenure who had never been billed. These were identified, filled with 0, and the column was converted to float. `customerID` was dropped as it carries no predictive signal.
 
 ### 2. Exploratory Data Analysis
-
-We start with distributions of the three numerical features  tenure, monthly charges, and total charges  and then look at how each categorical feature breaks down by churn status.
-
-**Numerical feature distributions**
-
-![Numerical Distributions](images/numerical_distributions.png)
-
-Tenure has a bimodal distribution: many customers either leave very early or stay for a very long time. Monthly charges are roughly uniform, while total charges skew right because they accumulate with tenure.
-
-**Numerical features split by churn**
-
-![Violin Plot](images/violin_churn_split.png)
-
-Churned customers have noticeably shorter tenure and higher monthly charges on average. This is already a strong signal before we even run any models.
-
-**Correlation heatmap**
-
-![Correlation Heatmap](images/correlation_heatmap.png)
-
-Total charges is highly correlated with tenure, which makes sense as it is simply the running total of monthly bills. We keep both features but this is worth noting.
-
-**Categorical features by churn status**
-
-![Categorical Count Plots](images/categorical_countplots.png)
-
-Month-to-month contract customers churn at a dramatically higher rate than those on one or two year contracts. Customers without online security, tech support, or online backup also show elevated churn. These patterns are consistent and visible across the dataset.
-
----
+Tenure has a bimodal distribution many customers either leave very early or stay for a very long time. Monthly charges are roughly uniform, while total charges skew right, since they accumulate with tenure. Churned customers have noticeably shorter tenure and higher monthly charges on average — a strong signal before any modeling begins. Month-to-month contract customers churn at a dramatically higher rate than those on one- or two-year contracts, and customers without online security, tech support, or online backup also show elevated churn.
 
 ### 3. Statistical Hypothesis Testing
+Charts can show patterns, but they can't tell us whether those patterns are statistically significant or just noise  so every feature was formally tested.
 
-Charts can show patterns but they cannot tell us whether those patterns are statistically significant or just noise. We run formal hypothesis tests on every feature.
+- **Categorical features:** Chi-square test of independence for significance, and Cramér's V to measure effect size (0–1 scale).
+- **Numerical features:** Welch's independent t-test to compare means between churned and retained groups, and point-biserial correlation for direction and magnitude.
 
-**For categorical features:** Chi-square test of independence to check significance, and Cramér's V to measure effect size on a 0 to 1 scale.
-
-**For numerical features:** Welch's independent t-test to compare means between churned and retained groups, and point-biserial correlation to get direction and magnitude.
-
-**Cramér's V effect sizes — categorical features**
-
-![Cramers V](images/cramers_v_barchart.png)
-
-Contract type has the highest effect size by a clear margin. Tenure, online security, and tech support follow. Every single categorical feature tested came back statistically significant at p < 0.05, meaning none of the patterns visible in the charts are noise.
-
-For numerical features, all three (tenure, monthly charges, total charges) showed highly significant differences between churned and retained groups with p-values in the range of 10⁻⁴⁰ to 10⁻⁵⁰.
-
----
+**Result:** Contract type has the highest effect size by a clear margin, followed by tenure, online security, and tech support. Every categorical feature tested came back statistically significant at p < 0.05. All three numerical features (tenure, monthly charges, total charges) showed highly significant differences between churned and retained groups, with p-values in the range of 10⁻⁴⁰ to 10⁻⁵⁰.
 
 ### 4. Preprocessing
-
-- Label encoding applied to all categorical columns, with encoders saved to disk for reuse
-- `StandardScaler` fitted on training data only and applied to the three numerical columns  essential for Logistic Regression and good practice generally
-- All preprocessing artifacts saved alongside the model so new data can be transformed identically
-
----
+Label encoding applied to all categorical columns (encoders saved to disk for reuse). `StandardScaler` fitted on training data only and applied to the three numerical columns. All preprocessing artifacts saved alongside the model so new data can be transformed identically.
 
 ### 5. Handling Class Imbalance
+The target is imbalanced at roughly 73/27. Rather than oversampling with SMOTE, `class_weight="balanced"` was used in all models this penalizes misclassifying the minority churn class more heavily without generating synthetic data.
 
-The target is imbalanced at roughly 73/27. Rather than oversampling (SMOTE), we use `class_weight="balanced"` in all models, which tells each model to penalise misclassifying the minority churn class more heavily. This avoids generating synthetic data while still correcting for the imbalance.
+### 6. Model Training & Cross-Validation
+Four models were trained and compared using 5-fold stratified cross-validation, scored on ROC-AUC (which measures how well the model separates churners from non-churners, regardless of threshold). **Gradient Boosting came out on top** with a mean ROC-AUC of ~0.84, narrowly ahead of Logistic Regression because it can capture non-linear interactions between features like contract type, tenure, and internet service type together.
 
----
-
-### 6. Model Training and Cross-Validation
-
-Four models were trained and compared using 5-fold stratified cross-validation. The metric used is ROC-AUC, which measures how well the model separates churners from non-churners regardless of the decision threshold.
-
-**Cross-validation comparison**
-
-![Model Comparison](images/cv_model_comparison.png)
-
-Gradient Boosting came out on top with a mean ROC-AUC of approximately 0.84, narrowly ahead of Logistic Regression. Unlike Logistic Regression, Gradient Boosting can capture non-linear interactions between features such as the combination of contract type, tenure, and internet service type.
-
----
-
-### 7. Final Model and Threshold Tuning
-
-The final Gradient Boosting model was trained with light hyperparameter tuning to reduce overfitting:
-
+### 7. Final Model & Threshold Tuning
 ```python
 GradientBoostingClassifier(
     n_estimators=200,
@@ -131,37 +72,70 @@ GradientBoostingClassifier(
     random_state=42
 )
 ```
-
-The default classification threshold of 0.5 is rarely optimal for imbalanced problems. We searched for the threshold that maximises the F1 score on the churn class. This meaningfully improved recall on churners which is the right trade-off here because missing an at-risk customer is more costly than a false alarm.
-
-**Confusion matrix**
-
-![Confusion Matrix](images/confusion_matrix.png)
-
-**ROC curve**
-
-![ROC Curve](images/roc_curve.png)
-
-The model achieves an AUC of approximately 0.84, meaning it correctly ranks a churner above a non-churner 84% of the time.
-
----
+The default 0.5 threshold is rarely optimal for imbalanced problems, so the threshold that maximizes F1 score on the churn class was used instead meaningfully improving recall on churners, since missing an at-risk customer is more costly than a false alarm.
 
 ### 8. Feature Importance
+Tenure, contract type, and monthly charges dominate the model's decisions consistent with what the statistical tests showed. The model learned the same relationships the hypothesis tests confirmed.
 
-![Feature Importance](images/feature_importance.png)
-
-Tenure, contract type, and monthly charges dominate the model's decisions consistent with what the statistical tests showed. The model has learnt the same relationships that the hypothesis tests confirmed.
-
----
-
-## Results Summary
+### Results Summary
 
 | Metric | Value |
-|--------|-------|
+|---|---|
 | ROC-AUC | ~0.84 |
 | Accuracy (tuned threshold) | ~0.77 |
 | Recall on churners | ~0.79 |
 | Precision on churners | ~0.60 |
+
+---
+
+## Part 2 — Power BI Executive Dashboard
+
+The notebook above answers **who is going to churn and why**. The dashboard answers **what should the business do about it, today** — built for retention managers and leadership who need a live, filterable view rather than a static report.
+
+### Dashboard at a glance
+
+| KPI | Value |
+|---|---|
+| Total Customers | 7,043 |
+| Churned Customers | 1,869 |
+| Retained Customers | 5,174 |
+| **Overall Churn Rate** | **26.5%** |
+
+The dashboard includes a churn-split pie chart, a customer treemap segmented by risk tier, contract- and tenure-based churn breakdowns, and monthly-charge comparisons between churned and retained customers — all filterable in real time.
+
+### Key insights surfaced by the dashboard
+
+- **Contract type is the biggest lever, by a wide margin.** Month-to-month customers churn at **42.7%**, one-year contract customers at **11.3%**, and two-year contract customers at just **2.8%** — a **~15x gap** between the riskiest and safest contract types.
+- **New customers are the most fragile.** Customers in their first year (0–12 months tenure) churn at **47.4%**, compared to just **9.5%** for customers with 48+ months tenure — churn is overwhelmingly an early-lifecycle problem, not a long-term satisfaction one.
+- **Churned customers pay more, not less.** Average monthly charges for churned customers are **$74.44**, versus **$61.27** for retained customers — pointing to a pricing or perceived-value problem rather than customers leaving to save money elsewhere.
+- **Risk compounds:** a new, month-to-month, higher-paying customer sits at the intersection of all three high-risk signals simultaneously — exactly the segment the dashboard is built to surface first.
+
+### Why this matters for the business
+
+Rather than spreading a flat retention budget evenly across all 7,043 customers, the dashboard lets a retention team filter directly to the highest-risk segment — new, month-to-month, higher-paying customers — and prioritize contract-upgrade or loyalty offers there first. That's the difference between a reactive, blanket-discount strategy and a targeted, ROI-driven one.
+
+### Built with
+Power BI Desktop, DAX (custom measures for Churn Rate %, Retained/Churned Customer counts, and Average Monthly Charges by churn status), and calculated columns for Risk Type and Tenure Band segmentation.
+
+---
+
+## Combined Key Findings
+
+1. **Contract type is the single strongest driver of churn** — confirmed statistically (highest Cramér's V) *and* visually in the dashboard (15x gap between month-to-month and two-year contracts).
+2. **Short tenure is tightly linked to churn.** Customers who leave tend to do so early — suggesting an onboarding and early-experience problem rather than a long-term satisfaction problem.
+3. **Lack of value-added services** (online security, tech support, device protection) is associated with higher churn — customers with more services have more reasons to stay.
+4. **Higher monthly charges correlate with churn**, both in the model's feature importance and in the dashboard's direct comparison — pointing to a pricing or value-perception issue worth investigating, particularly for fiber-optic customers.
+
+---
+
+## Technologies Used
+
+- **Python 3** — pandas, numpy (data manipulation)
+- **matplotlib, seaborn** — visualization
+- **scipy** — statistical hypothesis testing (chi-square, t-test, point-biserial correlation)
+- **scikit-learn** — preprocessing, model training, cross-validation, evaluation
+- **pickle** — model serialization
+- **Power BI, DAX, Power Query** — executive dashboard and business-facing reporting
 
 ---
 
@@ -196,63 +170,38 @@ def predict_churn(customer_dict):
 
 ---
 
-## Key Findings
-
-Contract type is the single strongest driver of churn. Customers on month-to-month contracts churn at rates several times higher than those on annual or two-year contracts, and this difference is statistically confirmed with the highest Cramér's V effect size of all features tested.
-
-Short tenure is tightly linked to churn. Customers who leave tend to do so early. Those who make it past the first year or two show dramatically lower churn rates, suggesting an onboarding and early experience problem rather than a long-term satisfaction problem.
-
-Lack of value-added services  online security, tech support, device protection — is associated with higher churn. Customers who subscribe to more services have more reasons to stay and a higher switching cost.
-
-Higher monthly charges correlate with churn. Fiber optic customers pay more and churn more, which points to a pricing or value perception issue in that segment specifically.
-
----
-
-## Technologies Used
-
-- Python 3
-- pandas, numpy — data manipulation
-- matplotlib, seaborn — visualisation
-- scipy — statistical hypothesis testing (chi-square, t-test, point-biserial correlation)
-- scikit-learn — preprocessing, model training, cross-validation, evaluation
-- pickle — model serialisation
-
----
-
 ## How to Run
 
-```bash
-## 🚀 Installation
-
-### Clone the Repository
-
+**Clone the repository**
 ```bash
 git clone https://github.com/Dishabhadauria30/-Telco-Customer-Churn-Statistical-Analysis-Predictive-ML.git
 ```
 
-### Navigate to the Project
-
+**Navigate to the project**
 ```bash
 cd -Telco-Customer-Churn-Statistical-Analysis-Predictive-ML
 ```
 
-### Install Dependencies
-
+**Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run the Jupyter Notebook
-
+**Run the notebook**
 ```bash
 jupyter notebook
 ```
-```
+
+**View the dashboard**
+Open `Customer_Churn_Dashboard.pbix` in Power BI Desktop (free download from Microsoft) to explore the interactive version.
 
 ---
 
 ## What I Would Add Next
 
-There are a few natural extensions to this project. SHAP values would allow per-customer explainability  not just which features matter globally, but why the model made a specific prediction for a specific person. A Streamlit app would make the prediction function accessible to a non-technical retention team. Experiment tracking with MLflow or Weights and Biases would make hyperparameter comparisons more systematic. And comparing SMOTE oversampling against the class-weight approach directly would be a useful ablation study.
-
+- **SHAP values** for per-customer explainability — not just which features matter globally, but why the model made a specific prediction for a specific person.
+- **A Streamlit app** to make the prediction function directly accessible to a non-technical retention team, beyond the static dashboard.
+- **Experiment tracking** with MLflow or Weights & Biases to make hyperparameter comparisons more systematic.
+- **A direct SMOTE vs. class-weight ablation study** to quantify the tradeoff between the two imbalance-handling approaches.
+- **Row-level drill-through in Power BI**, so a retention manager could click a risk segment and see the actual list of at-risk customers, not just the aggregate numbers.
 
