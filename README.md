@@ -8,7 +8,7 @@ The project covers the complete pipeline: data cleaning, exploratory analysis, s
 
 ## The Problem
 
-Customer churn is expensive. Acquiring a new customer costs significantly more than retaining an existing one. Telecom companies typically have churn rates between 15–25% annually, and without a way to identify at-risk customers early, retention efforts end up as generic blanket discounts — costly and ineffective.
+Customer churn is expensive. Acquiring a new customer costs significantly more than retaining an existing one. Telecom companies typically have churn rates between 15–25% annually, and without a way to identify at-risk customers early, retention efforts end up as generic blanket discounts costly and ineffective.
 
 This project builds a system that scores each customer with a churn probability *and* a dashboard that lets a retention manager see, at a glance, which customer segments need attention today.
 
