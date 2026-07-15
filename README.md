@@ -1,4 +1,4 @@
-# Telco Customer Churn Analysis — Statistical Analysis, Predictive ML & Power BI Dashboard
+# Telco Customer Churn Analysis - Statistical Analysis, Predictive ML & Power BI Dashboard
 
 A full end-to-end analytics project that goes beyond training a model. The goal was threefold: first, understand **why** customers leave a telecom company using rigorous statistical hypothesis testing; second, build a system that can **predict who is likely to leave next** so a retention team can act before it's too late; and third, package those findings into a **self-serve Power BI dashboard** so non-technical stakeholders can monitor churn risk without opening a notebook.
 
